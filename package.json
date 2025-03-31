@@ -7,7 +7,7 @@
     "test": "test",
     "seed": "cd server && npm run seed",
     "start": "cd server && npm run build && node dist/server.js",
-    "dev": "concurrently \"cd server && npm run watch\" \"cd client && npm run dev\"",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
     "dev:build": "npm run build && concurrently \"cd server && npm run watch\" \"cd client && npm run dev\"",
     "setup": "cd server && npm i && cd ../client && npm i",
     "build": "cd server && npm i && npm run build && cd ../client && npm i && npm run build",
