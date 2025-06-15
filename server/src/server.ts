@@ -1,32 +1,47 @@
-import express, { Application, Request, Response } from 'express';
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
+import typeDefs from './schemas/typeDefs';
+import { resolvers } from './resolvers';
+
 dotenv.config();
 
-const app: Application = express();
+const app = express(); // ✅ Let TS infer type
 app.use(express.json());
 app.use(cors());
 
-// Connect to MongoDB
-const mongoURI: string | undefined = process.env.MONGODB_URI;
+const mongoURI = process.env.MONGODB_URI;
 if (!mongoURI) {
-    console.error('MongoDB URI is missing from environment variables');
-    process.exit(1);
+  console.error('❌ MongoDB URI is missing.');
+  process.exit(1);
 }
 
-mongoose
-    .connect(mongoURI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    } as mongoose.ConnectOptions)
-    .then(() => console.log('MongoDB connected'))
-    .catch((err) => console.log(err));
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+} as mongoose.ConnectOptions)
+.then(() => console.log('✅ MongoDB connected'))
+.catch((err) => console.error('MongoDB error:', err));
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('API is running...');
-});
+const startApolloServer = async () => {
+  const apolloServer = new ApolloServer({ typeDefs, resolvers });
 
-const PORT: number = Number(process.env.PORT) || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  await apolloServer.start();
+  apolloServer.applyMiddleware({ app: app as any });
+
+
+
+  app.get('/', (_req, res) => {
+    res.send('🎵 Musician Portfolio API running...');
+  });
+
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () =>
+    console.log(`🚀 Server ready at http://localhost:${PORT}${apolloServer.graphqlPath}`)
+  );
+};
+
+startApolloServer();
