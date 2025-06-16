@@ -1,21 +1,24 @@
 import express from 'express';
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
 
 import typeDefs from './schemas/typeDefs';
 import { resolvers } from './resolvers';
 
 dotenv.config();
 
-const app = express(); // ✅ Let TS infer type
-app.use(express.json());
+const app = express();
 app.use(cors());
+app.use(bodyParser.json()); // required for expressMiddleware
 
+// MongoDB connection
 const mongoURI = process.env.MONGODB_URI;
 if (!mongoURI) {
-  console.error('❌ MongoDB URI is missing.');
+  console.error('❌ MongoDB URI missing in environment variables.');
   process.exit(1);
 }
 
@@ -24,23 +27,27 @@ mongoose.connect(mongoURI, {
   useUnifiedTopology: true,
 } as mongoose.ConnectOptions)
 .then(() => console.log('✅ MongoDB connected'))
-.catch((err) => console.error('MongoDB error:', err));
+.catch((err) => console.error('❌ MongoDB connection error:', err));
 
+// Apollo Server setup (v4)
 const startApolloServer = async () => {
-  const apolloServer = new ApolloServer({ typeDefs, resolvers });
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+  });
 
-  await apolloServer.start();
-  apolloServer.applyMiddleware({ app: app as any });
+  await server.start();
 
+  app.use('/graphql', expressMiddleware(server));
 
-
+  // Optional health check route
   app.get('/', (_req, res) => {
-    res.send('🎵 Musician Portfolio API running...');
+    res.send('🎵 Musician Portfolio API is running with Apollo Server v4');
   });
 
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () =>
-    console.log(`🚀 Server ready at http://localhost:${PORT}${apolloServer.graphqlPath}`)
+    console.log(`🚀 Server running at http://localhost:${PORT}/graphql`)
   );
 };
 

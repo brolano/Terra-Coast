@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { ApolloProvider } from '@apollo/client';
+import client from './apollo/client';
+import NewsletterSignup from './components/NewsletterSignup';
 
-function App() {
-  const [count, setCount] = useState(0)
+// import Music from './pages/Music';
+// import Photos from './pages/Photos';
+// import Merch from './pages/Merch';
 
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <ApolloProvider client={client}>
+      <Router>
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+          <Link className="navbar-brand" to="/">Terra Coast</Link>
+          <div className="collapse navbar-collapse">
+            <ul className="navbar-nav">
+              <li className="nav-item"><Link className="nav-link" to="/music">Music</Link></li>
+              <li className="nav-item"><Link className="nav-link" to="/photos">Photos</Link></li>
+              <li className="nav-item"><Link className="nav-link" to="/merch">Merch</Link></li>
+            </ul>
+          </div>
+        </nav>
 
-export default App
+        <div className="container mt-4">
+          <Routes>
+            {/* <Route path="/music" element={<Music />} />
+            <Route path="/photos" element={<Photos />} />
+            <Route path="/merch" element={<Merch />} /> */}
+            <Route path="/" element={<NewsletterSignup />} />
+          </Routes>
+        </div>
+      </Router>
+    </ApolloProvider>
+  );
+};
+
+export default App;
